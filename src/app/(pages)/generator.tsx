@@ -3,28 +3,25 @@
 import imagePlaceholder from "@/assets/image-placeholder.png";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { useDebounce } from "@/use-debounce";
+import type { generatedImage } from "@/db/schema";
+import { useDebounce } from "@/hooks/use-debounce";
 import { useQuery } from "@tanstack/react-query";
 import { CopyCheckIcon, CopyIcon, Loader2Icon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { useState } from "react";
 
-type ImageResponse = {
-  b64_json: string;
-  timings: { inference: number };
-};
-
-export default function ImageGenerator() {
+export default function ImageGenerator({
+  images,
+}: { images: (typeof generatedImage.$inferSelect)[] }) {
+  const { roomId } = useParams();
   const [prompt, setPrompt] = useState("");
   const [iterativeMode, setIterativeMode] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
-  const debouncedPrompt = useDebounce(prompt, 300);
-  const [generations, setGenerations] = useState<{ prompt: string; image: ImageResponse }[]>([]);
-  const [activeIndex, setActiveIndex] = useState<number>();
+  const debouncedPrompt = useDebounce(prompt, 1000);
 
-  const { data: image, isFetching } = useQuery({
-    placeholderData: (previousData) => previousData,
+  const { isFetching } = useQuery({
     queryKey: [debouncedPrompt],
     queryFn: async () => {
       const res = await fetch("/api/generate-image", {
@@ -32,29 +29,21 @@ export default function ImageGenerator() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt, userAPIKey: undefined, iterativeMode }),
+        body: JSON.stringify({ prompt, userAPIKey: undefined, iterativeMode, roomId }),
       });
 
       if (!res.ok) {
         throw new Error(await res.text());
       }
-      return (await res.json()) as ImageResponse;
+      return null;
     },
     enabled: !!debouncedPrompt.trim(),
     staleTime: Number.POSITIVE_INFINITY,
     retry: false,
   });
 
+  const activeImage = images.length > 0 ? images[images.length - 1] : undefined;
   const isDebouncing = prompt !== debouncedPrompt;
-
-  useEffect(() => {
-    if (image && !generations.map((g) => g.image).includes(image)) {
-      setGenerations((images) => [...images, { prompt, image }]);
-      setActiveIndex(generations.length);
-    }
-  }, [generations, image, prompt]);
-
-  const activeImage = activeIndex !== undefined ? generations[activeIndex].image : undefined;
 
   return (
     <div className="container mx-auto p-4 max-w-3xl">
@@ -70,6 +59,7 @@ export default function ImageGenerator() {
             black-forest-labs/FLUX.1-schnell
           </Link>
         </h1>
+        {roomId}
         <Textarea
           rows={4}
           spellCheck={false}
@@ -106,14 +96,14 @@ export default function ImageGenerator() {
                   blurDataURL={imagePlaceholder.blurDataURL}
                   width={1024}
                   height={768}
-                  src={`data:image/png;base64,${activeImage.b64_json}`}
+                  src={`data:image/png;base64,${activeImage?.b64}`}
                   alt=""
                   className={`${isFetching ? "animate-pulse" : ""} max-w-full rounded-lg object-cover shadow-sm shadow-black`}
                 />
               </div>
 
               <div className="mt-4 flex gap-4 overflow-x-scroll pb-4">
-                {generations.map((generatedImage, i) => (
+                {/* {generations.map((generatedImage, i) => (
                   <button
                     type="button"
                     key={generatedImage.image.b64_json}
@@ -130,7 +120,7 @@ export default function ImageGenerator() {
                       className="max-w-full rounded-lg object-cover shadow-sm shadow-black"
                     />
                   </button>
-                ))}
+                ))} */}
               </div>
             </div>
           )}

@@ -1,8 +1,8 @@
 import Providers from "@/components/providers";
+import clsx from "clsx";
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { SiteHeader } from "@/components/site-header";
 
 const fontSans = Inter({
   subsets: ["latin"],
@@ -26,12 +26,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${fontSans.variable} ${fontMono.variable} antialiased font-sans min-h-screen`}
+        className={clsx("antialiased font-sans min-h-screen", fontSans.variable, fontMono.variable)}
       >
-        <Providers>
-          <SiteHeader />
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
