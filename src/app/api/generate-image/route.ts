@@ -1,8 +1,30 @@
+import { env } from "@/env.mjs";
+import { Ratelimit } from "@unkey/ratelimit";
 import Together from "together-ai";
 import { z } from "zod";
 
+const unkey = new Ratelimit({
+  rootKey: env.UNKEY_ROOT_KEY,
+  namespace: "gen.img",
+  limit: 10,
+  duration: "30s",
+});
+
 export async function POST(req: Request) {
   const json = await req.json();
+  const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
+  const ratelimit = await unkey.limit(ip, {
+    resources: [
+      {
+        id: "somebody",
+        name: "Generating an image",
+        type: "gen.img",
+      },
+    ],
+  });
+  if (!ratelimit.success) {
+    return Response.json({ error: "Ratelimit exceeded" }, { status: 429 });
+  }
   const { prompt, iterativeMode } = z
     .object({
       prompt: z.string(),
@@ -10,17 +32,13 @@ export async function POST(req: Request) {
     })
     .parse(json);
 
-  // Add observability if a Helicone key is specified, otherwise skip
-  const options: ConstructorParameters<typeof Together>[0] = {};
-  if (process.env.HELICONE_API_KEY) {
-    options.baseURL = "https://together.helicone.ai/v1";
-    options.defaultHeaders = {
+  const client = new Together({
+    baseURL: "https://together.helicone.ai/v1",
+    defaultHeaders: {
       "Helicone-Auth": `Bearer ${process.env.HELICONE_API_KEY}`,
       "Helicone-Property-BYOK": "false",
-    };
-  }
-
-  const client = new Together(options);
+    },
+  });
 
   try {
     const response = await client.images.create({
