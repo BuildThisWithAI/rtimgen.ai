@@ -77,7 +77,7 @@ export default function ImageGenerator() {
   }
 
   useEffect(() => {
-    if (isTyping) {
+    if (isTyping && debouncedPrompt.length > 2) {
       startTransition(async () => {
         const res = await fetch("/api/generate-image", {
           method: "POST",
