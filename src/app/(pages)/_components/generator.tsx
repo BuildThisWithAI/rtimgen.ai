@@ -132,8 +132,8 @@ export default function ImageGenerator() {
         />
         <div className="flex justify-between items-center">
           {isPending ? (
-            <div className="flex items-center">
-              <Loader2Icon className="animate-spin mr-2" />
+            <div className="flex items-center text-sm">
+              <Loader2Icon className="animate-spin mr-2 size-4" />
               <span>Generating...</span>
             </div>
           ) : (
@@ -169,7 +169,6 @@ export default function ImageGenerator() {
                     className="w-32 shrink-0 opacity-50 hover:opacity-100"
                     onClick={() => {
                       setSelectedId(image.id);
-                      setPrompt(image.prompt);
                     }}
                   >
                     <TooltipProvider>
@@ -185,7 +184,7 @@ export default function ImageGenerator() {
                             className="max-w-full rounded-lg object-cover shadow-sm shadow-black"
                           />
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent className="max-w-40 text-left space-y-4">
                           <p>{image.prompt}</p>
                         </TooltipContent>
                       </Tooltip>
