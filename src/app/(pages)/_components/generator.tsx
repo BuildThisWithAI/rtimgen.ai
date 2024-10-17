@@ -12,6 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
+import { toast } from "sonner";
 
 export default function ImageGenerator() {
   const params = useParams();
@@ -21,7 +22,7 @@ export default function ImageGenerator() {
   const [isTyping, setIsTyping] = useState(false);
   const [selectedId, setSelectedId] = useState<string>();
 
-  const { data, isLoading } = db.useQuery({
+  const { data } = db.useQuery({
     rooms: {
       $: {
         where: {
@@ -37,7 +38,7 @@ export default function ImageGenerator() {
       },
     },
   });
-  const [prompt, setPrompt] = useState(data?.rooms[0]?.finalPrompt ?? "");
+  const [prompt, setPrompt] = useState<string>("");
   const debouncedPrompt = useDebounce(prompt, 1000);
   const [isPending, startTransition] = useTransition();
 
@@ -88,7 +89,7 @@ export default function ImageGenerator() {
         });
 
         if (!res.ok) {
-          throw new Error("Error generating image");
+          toast.error(res.status);
         }
         const { b64_json } = (await res.json()) as {
           b64_json: string;
@@ -97,7 +98,7 @@ export default function ImageGenerator() {
         setSelectedId(undefined);
       });
     }
-  }, [debouncedPrompt, isTyping]);
+  }, [debouncedPrompt]);
 
   return (
     <div className="container mx-auto p-4 max-w-3xl">
@@ -113,11 +114,12 @@ export default function ImageGenerator() {
             black-forest-labs/FLUX.1-schnell
           </Link>
         </h1>
-        {roomId}
+        {/* {roomId} */}
         <Textarea
           rows={4}
           spellCheck={false}
           required
+          defaultValue={data?.rooms[0]?.finalPrompt}
           placeholder="Describe the image you want to generate..."
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
@@ -153,7 +155,7 @@ export default function ImageGenerator() {
                   height={768}
                   src={`data:image/png;base64,${activeImage?.b64_json}`}
                   alt=""
-                  className={`${isLoading ? "animate-pulse" : ""} max-w-full rounded-lg object-cover shadow-sm shadow-black`}
+                  className={`${isPending ? "animate-pulse" : ""} max-w-full rounded-lg object-cover shadow-sm shadow-black`}
                 />
               </div>
 
@@ -163,7 +165,10 @@ export default function ImageGenerator() {
                     type="button"
                     key={image.b64_json}
                     className="w-32 shrink-0 opacity-50 hover:opacity-100"
-                    onClick={() => setSelectedId(image.id)}
+                    onClick={() => {
+                      setSelectedId(image.id);
+                      setPrompt(image.prompt);
+                    }}
                   >
                     <TooltipProvider>
                       <Tooltip>
