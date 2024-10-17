@@ -12,9 +12,9 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   return (
     <Sidebar>
       <SidebarHeader className="min-h-[50px] font-semibold flex justify-end">
-        <div className="flex-1">
+        <div className="flex-1 px-2.5">
           <ImageIcon className="inline-flex size-5 mr-2" />
-          Image Generator
+          rtimgen.ai
         </div>
         <SidebarTrigger />
       </SidebarHeader>
