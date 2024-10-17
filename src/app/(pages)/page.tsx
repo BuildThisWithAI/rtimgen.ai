@@ -1,5 +1,5 @@
-import ImageGenerator from "./generator";
+import ImageGenerator from "./_components/generator";
 
 export default function Page() {
-  return <ImageGenerator images={[]} />;
+  return <ImageGenerator />;
 }

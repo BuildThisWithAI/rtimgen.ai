@@ -50,7 +50,7 @@ export function NavMain({
             <CollapsibleContent className="px-4 py-0.5">
               <ul className="grid border-l px-2">
                 {item.items?.map((subItem) => (
-                  <li key={subItem.title}>
+                  <li key={subItem.url}>
                     <Link
                       href={subItem.url}
                       className="min-w-8 flex h-8 items-center gap-2 overflow-hidden rounded-md px-2 text-sm font-medium text-muted-foreground ring-ring transition-all hover:bg-accent hover:text-accent-foreground focus-visible:ring-2"

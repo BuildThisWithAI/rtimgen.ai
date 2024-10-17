@@ -10,8 +10,12 @@ export const env = createEnv({
     DATABASE_URL: z.string().min(1),
     TURSO_AUTH_TOKEN: z.string().min(1),
   },
-  client: {},
-  experimental__runtimeEnv: {},
+  client: {
+    NEXT_PUBLIC_INSTANTDB_APP_ID: z.string().min(1),
+  },
+  experimental__runtimeEnv: {
+    NEXT_PUBLIC_INSTANTDB_APP_ID: process.env.NEXT_PUBLIC_INSTANTDB_APP_ID,
+  },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   emptyStringAsUndefined: true,
   extends: [vercel()],

@@ -1,16 +1,22 @@
 import { env } from "@/env.mjs";
-import { createClient } from "@libsql/client";
-import { config } from "dotenv";
-import { drizzle } from "drizzle-orm/libsql";
-import * as schema from "./schema";
+import { init } from "@instantdb/react";
 
-config({
-  path: ".env",
-});
+type GeneratedImage = {
+  b64_json: string;
+  roomId: string;
+  prompt: string;
+  createdAt: string;
+};
 
-const client = createClient({
-  url: env.DATABASE_URL,
-  authToken: env.TURSO_AUTH_TOKEN,
-});
+type Room = {
+  id: string;
+  finalPrompt: string;
+  createdAt: string;
+};
 
-export const db = drizzle(client, { schema });
+export type Schema = {
+  rooms: Room;
+  images: GeneratedImage;
+};
+
+export const db = init<Schema>({ appId: env.NEXT_PUBLIC_INSTANTDB_APP_ID });
