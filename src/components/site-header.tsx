@@ -8,7 +8,7 @@ import { SidebarTrigger, useSidebar } from "./ui/sidebar";
 export function SiteHeader() {
   const { open } = useSidebar();
   return (
-    <header className="bg-background border-b min-h-[50px]">
+    <header className="bg-background/40 backdrop-blur-lg border-b min-h-[50px] sticky top-0 z-10">
       <nav className="flex justify-between items-center min-h-full">
         {!open ? (
           <SidebarTrigger className="ml-4">
