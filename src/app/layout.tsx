@@ -1,4 +1,4 @@
-import Providers from "@/components/providers";
+import { Toaster } from "@/components/ui/sonner";
 import clsx from "clsx";
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
@@ -28,7 +28,8 @@ export default function RootLayout({
       <body
         className={clsx("antialiased font-sans min-h-screen", fontSans.variable, fontMono.variable)}
       >
-        <Providers>{children}</Providers>
+        {children}
+        <Toaster />
       </body>
     </html>
   );
