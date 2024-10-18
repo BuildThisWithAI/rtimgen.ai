@@ -2,12 +2,32 @@
 
 import { NavMain } from "@/components/nav-main";
 import { db } from "@/db";
-import { HistoryIcon } from "lucide-react";
+import { HistoryIcon, InfoIcon } from "lucide-react";
 
 export function HistoryItems() {
+  const { user } = db.useAuth();
+
   const { data, isLoading } = db.useQuery({
-    rooms: {},
+    rooms: {
+      $: {
+        where: {
+          createdBy: user?.email,
+        },
+      },
+    },
   });
+  if (!user)
+    return (
+      <NavMain
+        items={[
+          {
+            icon: <InfoIcon className="size-4" />,
+            title: "Log in to save your images",
+            url: "#",
+          },
+        ]}
+      />
+    );
   const items = [
     {
       title: "History",

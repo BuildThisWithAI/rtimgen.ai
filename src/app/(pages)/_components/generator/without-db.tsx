@@ -30,7 +30,7 @@ export default function ImageGeneratorStateOnly() {
 
   function addImage({ prompt, b64_json }: { b64_json: string; prompt: string }) {
     const newImage: ImageResponse = {
-      id: Date.now().toString(),
+      id: new Date().toISOString(),
       b64_json,
       prompt,
       createdAt: new Date().toLocaleString(),

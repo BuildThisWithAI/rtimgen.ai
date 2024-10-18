@@ -52,14 +52,16 @@ export default function ImageGeneratorWithDB() {
       db.transact(
         tx.rooms[roomId].update({
           finalPrompt: prompt,
-          createtAt: Date.now().toLocaleString(),
+          createdAt: new Date().toISOString(),
+          createdBy: user?.email,
         }),
       );
     } else {
       db.transact(
         tx.rooms[roomIdNew].update({
           finalPrompt: prompt,
-          createtAt: Date.now().toLocaleString(),
+          createdAt: new Date().toISOString(),
+          createdBy: user?.email,
         }),
       );
     }
@@ -68,7 +70,7 @@ export default function ImageGeneratorWithDB() {
         b64_json,
         roomId: roomIdNew,
         prompt,
-        createdAt: Date.now().toLocaleString(),
+        createdAt: new Date().toISOString(),
       }),
     );
     router.replace(`/room/${roomIdNew}`, {
