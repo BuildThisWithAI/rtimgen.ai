@@ -7,8 +7,8 @@ import { z } from "zod";
 const unkey = new Ratelimit({
   rootKey: env.UNKEY_ROOT_KEY,
   namespace: "gen.img",
-  limit: 10,
-  duration: "30s",
+  limit: 100,
+  duration: "86400s",
 });
 
 export async function POST(req: Request) {
@@ -26,9 +26,10 @@ export async function POST(req: Request) {
   if (!ratelimit.success) {
     return Response.json({ error: "Ratelimit exceeded" }, { status: 429 });
   }
-  const { prompt, iterativeMode } = z
+  const { prompt, iterativeMode, userEmail } = z
     .object({
       prompt: z.string(),
+      userEmail: z.string().email().optional(),
       iterativeMode: z.boolean(),
       roomId: z.string().optional(),
     })
@@ -37,8 +38,10 @@ export async function POST(req: Request) {
   const client = new Together({
     baseURL: "https://together.helicone.ai/v1",
     defaultHeaders: {
-      "Helicone-Auth": `Bearer ${process.env.HELICONE_API_KEY}`,
+      "Helicone-Auth": `Bearer ${env.HELICONE_API_KEY}`,
       "Helicone-Property-BYOK": "false",
+      "Helicone-User-Id": userEmail ?? "anonymous",
+      "Helicone-Cache-Enabled": "true",
     },
   });
 

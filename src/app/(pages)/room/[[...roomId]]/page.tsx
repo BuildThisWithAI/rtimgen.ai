@@ -1,5 +1,5 @@
-import ImageGenerator from "@/app/(pages)/_components/generator";
+import ImageGeneratorWithDB from "../../_components/generator/with-db";
 
 export default function Page() {
-  return <ImageGenerator />;
+  return <ImageGeneratorWithDB />;
 }

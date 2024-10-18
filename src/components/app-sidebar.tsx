@@ -3,10 +3,12 @@ import { ImageIcon } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarItem,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { NavUser } from "./nav-user";
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
   return (
@@ -18,8 +20,11 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
         </div>
         <SidebarTrigger />
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="pb-0">
         <SidebarItem>{children}</SidebarItem>
+        <SidebarFooter className="mt-auto">
+          <NavUser />
+        </SidebarFooter>
       </SidebarContent>
     </Sidebar>
   );

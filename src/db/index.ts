@@ -11,6 +11,7 @@ type GeneratedImage = {
 type Room = {
   id: string;
   finalPrompt: string;
+  createdBy: string;
   createdAt: string;
 };
 
@@ -19,4 +20,4 @@ export type Schema = {
   images: GeneratedImage;
 };
 
-export const db = init<Schema>({ appId: env.NEXT_PUBLIC_INSTANTDB_APP_ID });
+export const db = init<Schema>({ appId: env.NEXT_PUBLIC_INSTANTDB_APP_ID, devtool: false });

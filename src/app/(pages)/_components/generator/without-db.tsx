@@ -4,74 +4,39 @@ import imagePlaceholder from "@/assets/image-placeholder.png";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { db } from "@/db";
 import { useDebounce } from "@/hooks/use-debounce";
-import { id, tx } from "@instantdb/react";
 import { InfoIcon, Loader2Icon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 
-export default function ImageGenerator() {
-  const params = useParams();
-  const router = useRouter();
-  const roomId = params.roomId?.at(0) ?? undefined;
+interface ImageResponse {
+  id: string;
+  b64_json: string;
+  prompt: string;
+  createdAt: string;
+}
+
+export default function ImageGeneratorStateOnly() {
   const [iterativeMode, setIterativeMode] = useState(false);
   const [selectedId, setSelectedId] = useState<string>();
-
-  const { data } = db.useQuery({
-    rooms: {
-      $: {
-        where: {
-          id: roomId ?? "IDK",
-        },
-      },
-    },
-    images: {
-      $: {
-        where: {
-          roomId: roomId ?? "IDK",
-        },
-      },
-    },
-  });
+  const [images, setImages] = useState<ImageResponse[]>([]);
   const [prompt, setPrompt] = useState<string>("");
   const debouncedPrompt = useDebounce(prompt, 1000);
   const [isPending, startTransition] = useTransition();
 
-  const activeImage =
-    data?.images.find((image) => image.id === selectedId) ?? data?.images[data?.images.length - 1];
+  const activeImage = images.find((image) => image.id === selectedId) ?? images[images.length - 1];
 
   function addImage({ prompt, b64_json }: { b64_json: string; prompt: string }) {
-    const roomIdNew = roomId ?? id();
-    if (roomId) {
-      db.transact(
-        tx.rooms[roomId].update({
-          finalPrompt: prompt,
-          createtAt: Date.now().toLocaleString(),
-        }),
-      );
-    } else {
-      db.transact(
-        tx.rooms[roomIdNew].update({
-          finalPrompt: prompt,
-          createtAt: Date.now().toLocaleString(),
-        }),
-      );
-    }
-    db.transact(
-      tx.images[id()].update({
-        b64_json,
-        roomId: roomIdNew,
-        prompt,
-        createdAt: Date.now().toLocaleString(),
-      }),
-    );
-    router.replace(`/room/${roomIdNew}`, {
-      scroll: false,
-    });
+    const newImage: ImageResponse = {
+      id: Date.now().toString(),
+      b64_json,
+      prompt,
+      createdAt: new Date().toLocaleString(),
+    };
+    setImages((prevImages) => [...prevImages, newImage]);
+    setSelectedId(newImage.id);
   }
 
   const generateImage = async (promptToUse: string) => {
@@ -83,7 +48,7 @@ export default function ImageGenerator() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt: promptToUse, roomId, iterativeMode }),
+        body: JSON.stringify({ prompt: promptToUse, iterativeMode }),
       });
 
       if (!res.ok) {
@@ -95,7 +60,6 @@ export default function ImageGenerator() {
         b64_json: string;
       };
       addImage({ prompt: promptToUse, b64_json });
-      setSelectedId(undefined);
     });
   };
 
@@ -124,7 +88,6 @@ export default function ImageGenerator() {
           rows={4}
           spellCheck={false}
           required
-          defaultValue={data?.rooms[0]?.finalPrompt}
           placeholder="Describe the image you want to generate..."
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
@@ -162,10 +125,10 @@ export default function ImageGenerator() {
               </div>
 
               <div className="mt-4 flex gap-4 overflow-x-scroll pb-4">
-                {data?.images.map((image) => (
+                {images.map((image) => (
                   <button
                     type="button"
-                    key={image.b64_json}
+                    key={image.id}
                     className="w-32 shrink-0 opacity-50 hover:opacity-100"
                     onClick={() => {
                       setSelectedId(image.id);
