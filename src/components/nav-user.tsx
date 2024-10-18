@@ -1,7 +1,7 @@
 "use client";
 import { ChevronsUpDown, LogOut } from "lucide-react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,11 +11,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { db } from "@/db";
-import Link from "next/link";
+import { env } from "@/env.mjs";
+import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { GoogleIcon } from "./icons";
-import { Button, buttonVariants } from "./ui/button";
-import { env } from "@/env.mjs";
+import { Button } from "./ui/button";
 
 const url = db.auth.createAuthorizationURL({
   // Use the google client name in the Instant dashboard auth tab
@@ -25,22 +25,30 @@ const url = db.auth.createAuthorizationURL({
 
 export function NavUser() {
   const { user } = db.useAuth();
-  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const [isLoggingOut, startLogOut] = useTransition();
+  const [isLoggingIn, startLogIn] = useTransition();
+
   const logOut = () => {
-    startTransition(async () => {
+    startLogOut(async () => {
       await db.auth.signOut();
+      router.push("/");
     });
   };
+
   if (!user)
     return (
-      <Link href={url} className="w-full">
-        <Button
-          className="text-xs flex gap-4 items-center w-full text-left justify-start"
-          variant="ghost"
-        >
-          <GoogleIcon className="size-5" /> Log in with Google
-        </Button>
-      </Link>
+      <Button
+        onClick={() =>
+          startLogIn(() => {
+            router.push(url);
+          })
+        }
+        className="text-xs flex gap-4 items-center w-full text-left justify-start"
+        variant="ghost"
+      >
+        <GoogleIcon className="size-5" /> {isLoggingIn ? "Logging in..." : "Log in with Google"}
+      </Button>
     );
 
   return (
@@ -48,6 +56,7 @@ export function NavUser() {
       <DropdownMenuTrigger className="w-full rounded-md outline-none ring-ring hover:bg-accent focus-visible:ring-2 data-[state=open]:bg-accent">
         <div className="flex items-center gap-2 px-2 py-1.5 text-left text-sm transition-all">
           <Avatar className="h-7 w-7 rounded-md border">
+            <AvatarImage src="https://api.dicebear.com/9.x/bottts-neutral/svg?seed=Mason" />
             <AvatarFallback className="rounded-md">CN</AvatarFallback>
           </Avatar>
           <div className="grid flex-1 leading-none">
@@ -63,6 +72,7 @@ export function NavUser() {
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm transition-all">
             <Avatar className="h-7 w-7 rounded-md">
+              <AvatarImage src="https://api.dicebear.com/9.x/bottts-neutral/svg?seed=Mason" />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
             <div className="grid flex-1">
@@ -75,7 +85,7 @@ export function NavUser() {
         <DropdownMenuSeparator />
         <DropdownMenuItem className="gap-2" onClick={logOut}>
           <LogOut className="h-4 w-4 text-muted-foreground" />
-          {isPending ? "Logging out..." : "Log out"}
+          {isLoggingOut ? "Logging out..." : "Log out"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
