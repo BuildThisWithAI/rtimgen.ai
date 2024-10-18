@@ -113,6 +113,8 @@ export default function ImageGeneratorWithDB() {
     }
   }, [debouncedPrompt, iterativeMode]);
 
+  const canType = roomId == null || user?.email === data?.rooms[0]?.createdBy;
+
   return (
     <div className="container mx-auto p-4 max-w-3xl">
       <div className="space-y-4">
@@ -128,32 +130,36 @@ export default function ImageGeneratorWithDB() {
             black-forest-labs/FLUX.1-schnell
           </Link>
         </h1>
-        <Textarea
-          rows={4}
-          spellCheck={false}
-          required
-          defaultValue={data?.rooms[0]?.finalPrompt}
-          placeholder="Describe the image you want to generate..."
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          className="min-h-[100px]"
-        />
-        <div className="flex justify-between items-center">
-          {isPending ? (
-            <div className="flex items-center text-sm">
-              <Loader2Icon className="animate-spin mr-2 size-4" />
-              <span>Generating...</span>
+        {canType && (
+          <>
+            <Textarea
+              rows={4}
+              spellCheck={false}
+              required
+              defaultValue={data?.rooms[0]?.finalPrompt}
+              placeholder="Describe the image you want to generate..."
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              className="min-h-[100px]"
+            />
+            <div className="flex justify-between items-center">
+              {isPending ? (
+                <div className="flex items-center text-sm">
+                  <Loader2Icon className="animate-spin mr-2 size-4" />
+                  <span>Generating...</span>
+                </div>
+              ) : (
+                <div className="flex items-center text-sm gap-2">
+                  <InfoIcon className="size-4" /> Type to generate
+                </div>
+              )}
+              <div className="flex gap-2 items-center">
+                <span className="font-mono text-sm">Iterative?</span>
+                <Switch onCheckedChange={setIterativeMode} checked={iterativeMode} />
+              </div>
             </div>
-          ) : (
-            <div className="flex items-center text-sm gap-2">
-              <InfoIcon className="size-4" /> Type to generate
-            </div>
-          )}
-          <div className="flex gap-2 items-center">
-            <span className="font-mono text-sm">Iterative?</span>
-            <Switch onCheckedChange={setIterativeMode} checked={iterativeMode} />
-          </div>
-        </div>
+          </>
+        )}
         <div className="flex w-full grow flex-col items-center justify-center pb-8 pt-4 text-center">
           {activeImage && (
             <div className="mt-4 flex w-full max-w-4xl flex-col justify-center">
