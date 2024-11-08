@@ -42,6 +42,8 @@ export async function POST(req: Request) {
       "Helicone-Property-BYOK": "false",
       "Helicone-User-Id": userEmail ?? "anonymous",
       "Helicone-Cache-Enabled": "true",
+      "Helicone-Property-App":
+        process.env.NODE_ENV === "production" ? "rtimgen.ai" : "rtimgen.ai-dev",
     },
   });
 
